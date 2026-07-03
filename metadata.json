@@ -1,0 +1,6 @@
+{
+  "name": "Goiânia Tubos Inox",
+  "description": "Marketplace industrial premium B2B para tubos, conexões, válvulas e equipamentos em aço inoxidável e aço carbono.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
