@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CartItem, QuoteRequest, B2BUser } from '../types';
-import { X, Trash2, Send, Phone, ClipboardCheck, ArrowRight, MapPin, Building, User, Calendar, Plus, Minus, ShieldCheck } from 'lucide-react';
+import { X, Trash2, Send, Phone, ClipboardCheck, ArrowRight, MapPin, Building, User, Calendar, Plus, Minus, ShieldCheck, FileText } from 'lucide-react';
 import { motion } from 'motion/react';
+import { generateQuotePDF } from '../utils/pdfGenerator';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -50,7 +51,7 @@ export default function CartDrawer({
   // Controlled internally with CSS visibility and slide animation to preserve states
 
   // Build the WhatsApp formatted message URL
-  const handleSendQuote = (e: React.FormEvent) => {
+  const handleSendQuote = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -67,9 +68,21 @@ export default function CartDrawer({
     setIsSubmitting(true);
 
     try {
-      // 1. Build text message for WhatsApp
+      // Generate Quote ID
+      const quoteId = 'GTI-' + Math.floor(100000 + Math.random() * 900000);
+
+      // 1. Generate and Download PDF first
+      await generateQuotePDF(quoteId, cartItems, {
+        name: clientName,
+        company: clientCompany,
+        phone: clientPhone,
+        city,
+        notes: generalNotes || undefined
+      });
+
+      // 2. Build text message for WhatsApp
       let text = `*SOLICITAÇÃO DE ORÇAMENTO - GOIÂNIA TUBOS INOX*\n`;
-      text += `_Gerado via B2B Marketplace_\n`;
+      text += `_Gerado via B2B Marketplace (PDF Gerado com sucesso!)_\n`;
       text += `===================================\n\n`;
       text += `*DADOS DO SOLICITANTE*\n`;
       text += `• *Nome:* ${clientName}\n`;
@@ -80,7 +93,7 @@ export default function CartDrawer({
       text += `*ITENS DO PEDIDO*\n`;
       cartItems.forEach((item, index) => {
         text += `${index + 1}) *${item.product.name}*\n`;
-        text += `   - *Qtd:* ${item.quantity} ${item.product.unit}(s)\n`;
+        text += `   - *Qtd:* ${item.quantity} ${item.product.unit || 'UN'}(s)\n`;
         text += `   - *Bitola:* ${item.selectedSize}\n`;
         text += `   - *Material/Liga:* ${item.selectedMaterial}\n`;
         if (item.selectedPressureClass) {
@@ -98,15 +111,15 @@ export default function CartDrawer({
       }
 
       text += `===================================\n`;
-      text += `_Por favor, enviar cotação formal com prazos de entrega e frete FOB/CIF._`;
+      text += `_Enviei também o PDF Corporativo de especificações gerado pelo portal GTI. Por favor, enviar cotação formal com prazos de entrega e frete FOB/CIF._`;
 
-      // 2. Encode to URI
+      // 3. Encode to URI
       const encodedText = encodeURIComponent(text);
       const whatsappUrl = `https://wa.me/5562998517536?text=${encodedText}`;
 
-      // 3. Create Quote object for history
+      // 4. Create Quote object for history
       const newQuote: QuoteRequest = {
-        id: 'GTI-' + Math.floor(100000 + Math.random() * 900000),
+        id: quoteId,
         date: new Date().toLocaleDateString('pt-BR', {
           day: '2-digit',
           month: '2-digit',
@@ -126,7 +139,7 @@ export default function CartDrawer({
       // Save to history list
       onSaveQuoteToHistory(newQuote);
 
-      // 4. Open WhatsApp
+      // 5. Open WhatsApp
       window.open(whatsappUrl, '_blank');
 
       // Clear the cart & close
@@ -134,7 +147,7 @@ export default function CartDrawer({
       onClose();
     } catch (err) {
       console.error(err);
-      setErrorMsg('Falha ao gerar redirecionamento de WhatsApp.');
+      setErrorMsg('Falha ao gerar o PDF corporativo ou ao redirecionar para o WhatsApp.');
     } finally {
       setIsSubmitting(false);
     }
@@ -152,8 +165,22 @@ export default function CartDrawer({
           animate={isOpen ? { x: 0 } : { x: '100%' }}
           initial={{ x: '100%' }}
           transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-          className="w-screen max-w-lg bg-white shadow-2xl flex flex-col h-full border-l border-slate-200 pointer-events-auto"
+          className="w-screen max-w-lg bg-white shadow-2xl flex flex-col h-full border-l border-slate-200 pointer-events-auto relative"
         >
+          {/* Submitting PDF Overlay */}
+          {isSubmitting && (
+            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex flex-col items-center justify-center p-6 text-center text-white animate-fade-in" id="pdf-generating-overlay">
+              <div className="relative w-14 h-14 mb-4 flex items-center justify-center">
+                <div className="absolute inset-0 border-4 border-brand-teal/20 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-t-brand-teal rounded-full animate-spin"></div>
+                <FileText className="w-5 h-5 text-brand-teal animate-pulse" />
+              </div>
+              <h3 className="font-display font-bold text-base mb-1.5">Gerando PDF do Orçamento...</h3>
+              <p className="text-[11px] text-slate-300 max-w-xs leading-relaxed">
+                Estamos montando um PDF personalizado com a logo da Goiânia Tubos Inox e suas especificações de forma 100% segura. O arquivo será baixado e o WhatsApp abrirá logo em seguida!
+              </p>
+            </div>
+          )}
           
           {/* Header */}
           <div className="p-6 bg-slate-900 text-white flex items-center justify-between">

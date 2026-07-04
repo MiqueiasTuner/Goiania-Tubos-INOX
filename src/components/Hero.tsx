@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   Phone
 } from 'lucide-react';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface HeroProps {
   onStartShopping: () => void;
@@ -26,30 +27,39 @@ interface HeroProps {
 }
 
 export default function Hero({ onStartShopping, onViewSegments }: HeroProps) {
+  const { lang } = useLanguage();
   const [activeSlide, setActiveSlide] = useState(0);
 
   const SLIDES = [
     {
-      badge: 'Mix de Produtos Homologado',
-      title: 'O MAIOR MIX DE SOLUÇÕES EM INOX E CARBONO',
-      subtitle: 'Tubos OD sanitários, conexões flangeadas, curvas de alta pressão, flanges ANSI/DIN, válvulas industriais e chapas espelhadas. Estoque local com máxima rastreabilidade para sua indústria.',
-      buttonText: 'VER CATÁLOGO',
+      badge: lang === 'pt' ? 'Mix de Produtos Homologado' : lang === 'es' ? 'Mix de Productos Homologado' : 'Approved Product Mix',
+      title: lang === 'pt' ? 'O MAIOR MIX DE SOLUÇÕES EM INOX E CARBONO' : 
+             lang === 'es' ? 'EL MAYOR MIX DE SOLUCIONES EN INOX Y CARBONO' : 
+             'THE LARGEST RANGE OF STAINLESS & CARBON SOLUTIONS',
+      subtitle: lang === 'pt' ? 'Tubos OD sanitários, conexões flangeadas, curvas de alta pressão, flanges ANSI/DIN, válvulas industriais e chapas espelhadas. Estoque local com máxima rastreabilidade para sua indústria.' :
+                lang === 'es' ? 'Tubos OD sanitarios, conexiones bridadas, codos de alta presión, bridas ANSI/DIN, válvulas industriales y chapas espejadas. Stock local con máxima trazabilidad para su industria.' :
+                'Sanitary OD tubes, flanged connections, high-pressure elbows, ANSI/DIN flanges, industrial valves, and mirrored sheets. Local inventory with maximum traceability for your facility.',
+      buttonText: lang === 'pt' ? 'VER CATÁLOGO' : lang === 'es' ? 'VER CATÁLOGO' : 'VIEW CATALOG',
       buttonAction: onStartShopping,
-      secondaryButtonText: 'Falar com Especialista',
+      secondaryButtonText: lang === 'pt' ? 'Falar com Especialista' : lang === 'es' ? 'Hablar con Especialista' : 'Talk to a Specialist',
       secondaryButtonAction: () => window.open('https://wa.me/5562998517536', '_blank'),
       bgGradient: 'from-[#011e41] via-[#022b5c] to-slate-900',
       illustrationType: 'mix_produtos',
     },
     {
-      badge: 'Estoque Local & Pronta Entrega',
-      title: 'MAIOR ESTOQUE, PRONTA ENTREGA E MAIS AGILIDADE',
-      subtitle: 'Na Goiânia Tubos Inox você encontra disponibilidade imediata e rapidez para faturamento direto, garantindo que sua planta industrial continue operando sem paradas de manutenção.',
-      buttonText: 'CARRINHO DE COTAÇÃO',
+      badge: lang === 'pt' ? 'Estoque Local & Pronta Entrega' : lang === 'es' ? 'Stock Local y Entrega Inmediata' : 'Local Stock & Fast Delivery',
+      title: lang === 'pt' ? 'MAIOR ESTOQUE, PRONTA ENTREGA E MAIS AGILIDADE' : 
+             lang === 'es' ? 'MAYOR STOCK, ENTREGA INMEDIATA Y MÁS AGILIDAD' : 
+             'LARGEST INVENTORY, IMMEDIATE DELIVERY & AGILITY',
+      subtitle: lang === 'pt' ? 'Na Goiânia Tubos Inox você encontra disponibilidade imediata e rapidez para faturamento direto, garantindo que sua planta industrial continue operando sem paradas de manutenção.' :
+                lang === 'es' ? 'En Goiânia Tubos Inox usted encuentra disponibilidad inmediata y rapidez para facturación directa, garantizando que su planta industrial siga operando sin paradas de mantenimiento.' :
+                'At Goiânia Tubos Inox you find immediate availability and rapid direct invoicing, ensuring that your industrial plant continues operating without maintenance downtime.',
+      buttonText: lang === 'pt' ? 'CARRINHO DE COTAÇÃO' : lang === 'es' ? 'CARRITO DE COTIZACIÓN' : 'QUOTE CART',
       buttonAction: () => {
         const el = document.getElementById('catalog-grid-section');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
       },
-      secondaryButtonText: 'Frotas e Unidades',
+      secondaryButtonText: lang === 'pt' ? 'Frotas e Unidades' : lang === 'es' ? 'Flotas y Sucursales' : 'Fleets & Branches',
       secondaryButtonAction: () => {
         const el = document.getElementById('unidades-section');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -58,12 +68,16 @@ export default function Hero({ onStartShopping, onViewSegments }: HeroProps) {
       illustrationType: 'logistica_estoque',
     },
     {
-      badge: 'Presença Nacional Estratégica',
-      title: 'MAIS PERTO DA SUA INDÚSTRIA',
-      subtitle: 'Conectando o Centro-Norte e N/NE do Brasil às melhores soluções em aço. Atendimento ágil, frete otimizado e faturamento express direto de Goiânia (GO) e Imperatriz (MA).',
-      buttonText: 'VER PRINCIPAIS SEGMENTOS',
+      badge: lang === 'pt' ? 'Presença Nacional Estratégica' : lang === 'es' ? 'Presencia Nacional Estratégica' : 'Strategic National Presence',
+      title: lang === 'pt' ? 'MAIS PERTO DA SUA INDÚSTRIA' : 
+             lang === 'es' ? 'MÁS CERCA DE SU INDUSTRIA' : 
+             'CLOSER TO YOUR INDUSTRY',
+      subtitle: lang === 'pt' ? 'Conectando o Centro-Norte e N/NE do Brasil às melhores soluções em aço. Atendimento ágil, frete otimizado e faturamento express direto de Goiânia (GO) e Imperatriz (MA).' :
+                lang === 'es' ? 'Conectando el Centro-Norte y N/NE de Brasil con las mejores soluciones en acero. Atención ágil, flete optimizado y facturación exprés directa de Goiânia (GO) e Imperatriz (MA).' :
+                'Connecting Central-North and N/NE Brazil with the best steel solutions. Agile service, optimized shipping, and express invoicing direct from Goiânia (GO) and Imperatriz (MA).',
+      buttonText: lang === 'pt' ? 'VER PRINCIPAIS SEGMENTOS' : lang === 'es' ? 'VER PRINCIPALES SEGMENTOS' : 'VIEW MAIN INDUSTRIES',
       buttonAction: onViewSegments,
-      secondaryButtonText: 'Baixar Catálogo PDF',
+      secondaryButtonText: lang === 'pt' ? 'Baixar Catálogo PDF' : lang === 'es' ? 'Descargar Catálogo PDF' : 'Download Catalog PDF',
       secondaryButtonAction: () => {
         const el = document.getElementById('download-catalog-section');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -111,12 +125,6 @@ export default function Hero({ onStartShopping, onViewSegments }: HeroProps) {
             {/* Left text column */}
             <div className="lg:col-span-7 space-y-6 animate-fade-in">
               
-              {/* Badge/Tag with real colors */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-teal/20 border border-brand-teal/40 rounded-full text-brand-teal-light text-xs font-bold uppercase tracking-wider">
-                <Zap className="w-3.5 h-3.5 fill-brand-teal text-brand-teal animate-pulse" />
-                <span>{SLIDES[activeSlide].badge}</span>
-              </div>
-
               {/* Title with space-grotesk styling */}
               <h1 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.08] text-white">
                 {SLIDES[activeSlide].title}
@@ -148,238 +156,113 @@ export default function Hero({ onStartShopping, onViewSegments }: HeroProps) {
               <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/10 max-w-lg">
                 <div className="flex items-center gap-2.5">
                   <CheckCircle2 className="w-4.5 h-4.5 text-brand-teal" />
-                  <span className="text-xs font-bold text-slate-300">100% Rastreável</span>
+                  <span className="text-xs font-bold text-slate-300">
+                    {lang === 'pt' ? '100% Rastreável' : lang === 'es' ? '100% Trazable' : '100% Traceable'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <CheckCircle2 className="w-4.5 h-4.5 text-brand-teal" />
-                  <span className="text-xs font-bold text-slate-300">Certificados MTR</span>
+                  <span className="text-xs font-bold text-slate-300">
+                    {lang === 'pt' ? 'Certificados MTR' : lang === 'es' ? 'Certificados MTR' : 'MTR Certificates'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <CheckCircle2 className="w-4.5 h-4.5 text-brand-teal" />
-                  <span className="text-xs font-bold text-slate-300">Ligas AISI 304/316</span>
+                  <span className="text-xs font-bold text-slate-300">
+                    {lang === 'pt' ? 'Ligas AISI 304/316' : lang === 'es' ? 'Aleaciones AISI 304/316' : 'AISI 304/316 Alloys'}
+                  </span>
                 </div>
               </div>
 
             </div>
 
-            {/* Right Visual Column (High-fidelity CSS marketing posters from screenshots) */}
+            {/* Right Visual Column (High-quality real marketing images in structured luxury containers) */}
             <div className="lg:col-span-5 hidden lg:flex items-center justify-center">
               
-              {/* SLIDE 0 VISUAL: MIX DE PRODUTOS BOARD (Inspired by image 3) */}
+              {/* SLIDE 0 VISUAL: MIX DE PRODUTOS BOARD (With requested Inox Tubos image) */}
               {SLIDES[activeSlide].illustrationType === 'mix_produtos' && (
-                <div className="relative bg-slate-950 border-2 border-slate-800 p-6 rounded-3xl w-full max-w-[430px] shadow-2xl flex flex-col justify-between overflow-hidden">
+                <div className="relative bg-slate-950 border-2 border-slate-800 p-2.5 rounded-3xl w-full max-w-[430px] shadow-2xl overflow-hidden group transition-all duration-300 hover:border-brand-teal/50">
                   {/* Subtle top decoration */}
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-brand-teal/10 rounded-full blur-2xl pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-brand-teal/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                   
-                  {/* Poster Header */}
-                  <div className="text-center pb-4 border-b border-slate-800/80">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 font-mono">Goiânia Tubos Inox</div>
-                    <h2 className="text-2xl font-black tracking-tighter text-white mt-1">MIX DE PRODUTOS</h2>
-                    <div className="inline-block mt-1.5 px-3 py-1 bg-[#c59c27] text-slate-950 font-black text-[10px] uppercase rounded-full tracking-widest">
-                      PRODUTOS INOX
-                    </div>
-                  </div>
+                  <img 
+                    src="https://blog.mecsteel.com.br/wp-content/uploads/2023/02/4-coisas-que-voce-precisa-saber-sobre-tubos-de-inox.jpeg" 
+                    alt="Mix de Produtos Inox" 
+                    className="w-full h-[360px] md:h-[380px] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-[1.03]"
+                    referrerPolicy="no-referrer"
+                  />
 
-                  {/* 2x3 Grid of Products from GTI poster */}
-                  <div className="grid grid-cols-2 gap-3.5 my-5">
-                    <div className="bg-slate-900/80 border border-slate-800 hover:border-brand-teal/40 p-2.5 rounded-xl flex items-center gap-2 transition-all">
-                      <span className="text-[#c59c27] font-bold text-xs">▶</span>
-                      <div className="text-left">
-                        <p className="text-[10px] text-slate-400 font-medium leading-tight">CHAPA INOX</p>
-                        <p className="text-xs font-bold text-slate-200">ESPELHADA</p>
-                      </div>
+                  {/* Elegant bottom caption bar */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-slate-950/90 border border-slate-800/80 px-4 py-3 rounded-xl flex items-center justify-between shadow-xl backdrop-blur-xs">
+                    <div>
+                      <span className="text-[10px] text-brand-teal font-extrabold uppercase tracking-wider block">Goiânia Tubos Inox</span>
+                      <span className="text-xs font-bold text-slate-200 block">
+                        {lang === 'pt' ? 'Alta Qualidade em Aço Inox' : lang === 'es' ? 'Alta Calidad en Acero Inoxidable' : 'Premium Stainless Steel'}
+                      </span>
                     </div>
-
-                    <div className="bg-slate-900/80 border border-slate-800 hover:border-brand-teal/40 p-2.5 rounded-xl flex items-center gap-2 transition-all">
-                      <span className="text-[#c59c27] font-bold text-xs">▶</span>
-                      <div className="text-left">
-                        <p className="text-[10px] text-slate-400 font-medium leading-tight">CURVA INOX</p>
-                        <p className="text-xs font-bold text-slate-200">SANÍTARIA OD</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-900/80 border border-slate-800 hover:border-brand-teal/40 p-2.5 rounded-xl flex items-center gap-2 transition-all">
-                      <span className="text-[#c59c27] font-bold text-xs">▶</span>
-                      <div className="text-left">
-                        <p className="text-[10px] text-slate-400 font-medium leading-tight">LUVA ROSCA</p>
-                        <p className="text-xs font-bold text-slate-200">DE AÇO INOX</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-900/80 border border-slate-800 hover:border-brand-teal/40 p-2.5 rounded-xl flex items-center gap-2 transition-all">
-                      <span className="text-[#c59c27] font-bold text-xs">▶</span>
-                      <div className="text-left">
-                        <p className="text-[10px] text-slate-400 font-medium leading-tight">FLANGE INOX</p>
-                        <p className="text-xs font-bold text-slate-200">PADRÃO ANSI</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-900/80 border border-slate-800 hover:border-brand-teal/40 p-2.5 rounded-xl flex items-center gap-2 transition-all">
-                      <span className="text-[#c59c27] font-bold text-xs">▶</span>
-                      <div className="text-left">
-                        <p className="text-[10px] text-slate-400 font-medium leading-tight">LIGA MACIÇA</p>
-                        <p className="text-xs font-bold text-slate-200">BARRA REDONDA</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-900/80 border border-slate-800 hover:border-brand-teal/40 p-2.5 rounded-xl flex items-center gap-2 transition-all">
-                      <span className="text-[#c59c27] font-bold text-xs">▶</span>
-                      <div className="text-left">
-                        <p className="text-[10px] text-slate-400 font-medium leading-tight">CONDUTO FLUIDO</p>
-                        <p className="text-xs font-bold text-slate-200">TUBO OD INOX</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Poster Footer website rounded track */}
-                  <div className="bg-slate-900/80 border border-slate-800/80 rounded-xl py-2 px-4 flex items-center justify-between">
-                    <span className="text-[9px] text-brand-teal font-extrabold font-mono tracking-wider">PRODUTOS PRONTA ENTREGA</span>
-                    <span className="text-[10px] font-bold text-slate-300">goianiatubos.com.br</span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {lang === 'pt' ? 'Mix de Produtos' : lang === 'es' ? 'Mix de Productos' : 'Product Mix'}
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* SLIDE 1 VISUAL: DISPONIBILIDADE E LOGÍSTICA BOARD (Inspired by image 2) */}
+              {/* SLIDE 1 VISUAL: DISPONIBILIDADE E LOGÍSTICA BOARD (With requested Capa Blog Outubro image) */}
               {SLIDES[activeSlide].illustrationType === 'logistica_estoque' && (
-                <div className="relative bg-slate-950 border-2 border-slate-800 p-6 rounded-3xl w-full max-w-[430px] shadow-2xl flex flex-col justify-between overflow-hidden">
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div className="relative bg-slate-950 border-2 border-slate-800 p-2.5 rounded-3xl w-full max-w-[430px] shadow-2xl overflow-hidden group transition-all duration-300 hover:border-brand-teal/50">
+                  {/* Subtle decorative glow behind */}
+                  <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                   
-                  {/* Poster Slogan Banner */}
-                  <div className="text-left space-y-1.5 pb-4 border-b border-slate-800/80">
-                    <span className="text-[9px] font-bold text-brand-teal tracking-widest uppercase font-mono block">Logística Integrada</span>
-                    <h2 className="text-lg font-black tracking-tight text-white uppercase leading-tight">
-                      MAIOR ESTOQUE, PRONTA ENTREGA E MAIS AGILIDADE
-                    </h2>
-                  </div>
+                  <img 
+                    src="https://goianiatubos.com.br/wp-content/uploads/2025/10/Capa-Blog-Outubro-1.png" 
+                    alt="Logística Integrada e Maior Estoque" 
+                    className="w-full h-[360px] md:h-[380px] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-[1.03]"
+                    referrerPolicy="no-referrer"
+                  />
 
-                  {/* Logistics Graphic Board */}
-                  <div className="my-5 bg-slate-900/50 rounded-2xl border border-slate-800 p-4 space-y-4">
-                    
-                    {/* Warehouse Status Block */}
-                    <div className="flex items-center justify-between bg-slate-950/80 border border-slate-800 p-3 rounded-xl">
-                      <div className="flex items-center gap-2.5">
-                        <Package className="w-5 h-5 text-brand-teal" />
-                        <div className="text-left">
-                          <p className="text-[9px] text-slate-500 font-medium">DISPONIBILIDADE</p>
-                          <p className="text-xs font-bold text-slate-200">Estoque Integrado Local</p>
-                        </div>
-                      </div>
-                      <span className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
-                        100% Ativo
+                  {/* Elegant bottom caption bar */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-slate-950/90 border border-slate-800/80 px-4 py-3 rounded-xl flex items-center justify-between shadow-xl backdrop-blur-xs">
+                    <div>
+                      <span className="text-[10px] text-brand-teal font-extrabold uppercase tracking-wider block">
+                        {lang === 'pt' ? 'Logística Integrada' : lang === 'es' ? 'Logística Integrada' : 'Integrated Logistics'}
+                      </span>
+                      <span className="text-xs font-bold text-slate-200 block">
+                        {lang === 'pt' ? 'Pronta Entrega & Mais Agilidade' : lang === 'es' ? 'Stock Inmediato y Agilidad' : 'Fast Shipping & Ready Stock'}
                       </span>
                     </div>
-
-                    {/* Fleet Route Status Block */}
-                    <div className="flex items-center justify-between bg-slate-950/80 border border-slate-800 p-3 rounded-xl">
-                      <div className="flex items-center gap-2.5">
-                        <Truck className="w-5 h-5 text-brand-teal" />
-                        <div className="text-left">
-                          <p className="text-[9px] text-slate-500 font-medium">TRANSPORTE EXPRESS</p>
-                          <p className="text-xs font-bold text-slate-200">Frota Própria e Homologados</p>
-                        </div>
-                      </div>
-                      <span className="bg-brand-teal/15 border border-brand-teal/30 text-brand-teal text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                        Despacho Imediato
-                      </span>
-                    </div>
-
-                    {/* Operational Slogan from Poster */}
-                    <p className="text-[11px] text-slate-300 italic text-center px-2 leading-relaxed">
-                      "Na Goiânia Tubos Inox você encontra a segurança de um estoque para manter sua demanda em movimento."
-                    </p>
-                  </div>
-
-                  {/* Poster Bottom Stats */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-center">
-                      <span className="text-xs text-slate-400 block font-medium">Faturamento</span>
-                      <span className="text-sm font-black text-brand-teal">DIRETO DA USINA</span>
-                    </div>
-                    <div className="p-2.5 bg-slate-900/80 border border-slate-800 rounded-xl text-center">
-                      <span className="text-xs text-slate-400 block font-medium">Atendimento</span>
-                      <span className="text-sm font-black text-brand-teal">CENTRO-NORTE</span>
-                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {lang === 'pt' ? 'Maior Estoque' : lang === 'es' ? 'Mayor Stock' : 'Largest Inventory'}
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* SLIDE 2 VISUAL: MAIS PERTO DA SUA INDÚSTRIA (Inspired by image 4) */}
+              {/* SLIDE 2 VISUAL: MAIS PERTO DA SUA INDÚSTRIA (With requested Capa Blog Junho image) */}
               {SLIDES[activeSlide].illustrationType === 'presenca_nacional' && (
-                <div className="relative bg-slate-950 border-2 border-slate-800 p-6 rounded-3xl w-full max-w-[430px] shadow-2xl flex flex-col justify-between overflow-hidden">
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div className="relative bg-slate-950 border-2 border-slate-800 p-2.5 rounded-3xl w-full max-w-[430px] shadow-2xl overflow-hidden group transition-all duration-300 hover:border-brand-teal/50">
+                  {/* Subtle decorative glow behind */}
+                  <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                   
-                  {/* Poster Header */}
-                  <div className="text-left space-y-1 pb-4 border-b border-slate-800/80">
-                    <span className="text-[9px] font-bold text-[#c59c27] tracking-widest uppercase font-mono block">Expansão Regional</span>
-                    <h2 className="text-lg font-black tracking-tight text-white uppercase leading-tight">
-                      MAIS PERTO DA SUA INDÚSTRIA
-                    </h2>
-                    <p className="text-[10px] text-slate-400 font-medium">Mais agilidade para o seu negócio.</p>
-                  </div>
+                  <img 
+                    src="https://goianiatubos.com.br/wp-content/uploads/2025/06/Capa-Blog-Junho.jpg" 
+                    alt="Presença Nacional e Expansão Regional" 
+                    className="w-full h-[360px] md:h-[380px] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-[1.03]"
+                    referrerPolicy="no-referrer"
+                  />
 
-                  {/* Connected Map SVG Graphics Board */}
-                  <div className="my-5 bg-slate-900/40 border border-slate-800 rounded-2xl p-4 relative h-48 flex items-center justify-center overflow-hidden">
-                    
-                    {/* Glowing Grid Background */}
-                    <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                    
-                    {/* SVG Map Lines & Connections */}
-                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 200">
-                      {/* Connection track lines */}
-                      <path 
-                        d="M 120,130 Q 180,70 280,60" 
-                        fill="none" 
-                        stroke="#00a2a6" 
-                        strokeWidth="2" 
-                        strokeDasharray="6,4"
-                        className="animate-[dash_12s_linear_infinite]"
-                      />
-                      <path 
-                        d="M 120,130 Q 140,110 160,150" 
-                        fill="none" 
-                        stroke="#00a2a6" 
-                        strokeWidth="1.5" 
-                      />
-                      <path 
-                        d="M 280,60 Q 300,90 320,120" 
-                        fill="none" 
-                        stroke="#00a2a6" 
-                        strokeWidth="1.5" 
-                      />
-                    </svg>
-
-                    {/* GOIÂNIA (GO) NODE */}
-                    <div className="absolute left-[105px] bottom-[40px] z-10 flex flex-col items-center">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-teal opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-teal"></span>
+                  {/* Elegant bottom caption bar */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-slate-950/90 border border-slate-800/80 px-4 py-3 rounded-xl flex items-center justify-between shadow-xl backdrop-blur-xs">
+                    <div>
+                      <span className="text-[10px] text-brand-teal font-extrabold uppercase tracking-wider block">
+                        {lang === 'pt' ? 'Expansão Regional' : lang === 'es' ? 'Expansión Regional' : 'Regional Expansion'}
                       </span>
-                      <div className="mt-1 bg-slate-950/90 border border-brand-teal/40 px-2 py-0.5 rounded text-[9px] font-black tracking-wide text-white">
-                        GOIÂNIA (GO)
-                      </div>
-                    </div>
-
-                    {/* IMPERATRIZ (MA) NODE */}
-                    <div className="absolute right-[100px] top-[35px] z-10 flex flex-col items-center">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c59c27] opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-[#c59c27]"></span>
+                      <span className="text-xs font-bold text-slate-200 block">
+                        {lang === 'pt' ? 'Mais Perto de Sua Indústria' : lang === 'es' ? 'Más Cerca de su Industria' : 'Closer to Your Plant'}
                       </span>
-                      <div className="mt-1 bg-slate-950/90 border border-[#c59c27]/40 px-2 py-0.5 rounded text-[9px] font-black tracking-wide text-white">
-                        IMPERATRIZ (MA)
-                      </div>
                     </div>
-
-                    {/* Connecting text card */}
-                    <div className="absolute bottom-3 right-3 bg-slate-950/90 border border-slate-800 p-2 rounded-lg text-right max-w-[170px]">
-                      <span className="text-[8px] text-slate-500 font-bold uppercase block leading-none">Cobertura Express</span>
-                      <span className="text-[10px] font-extrabold text-brand-teal leading-tight block mt-0.5">Centro-Norte e N/NE</span>
-                    </div>
-                  </div>
-
-                  {/* Operational slogan */}
-                  <div className="text-center bg-slate-900/80 border border-slate-800/80 rounded-xl py-2 px-3 text-[10px] text-slate-300 leading-relaxed font-medium">
-                    Conectando as indústrias brasileiras com soluções de pronta entrega.
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {lang === 'pt' ? 'Cobertura Nacional' : lang === 'es' ? 'Cobertura Nacional' : 'National Coverage'}
+                    </span>
                   </div>
                 </div>
               )}

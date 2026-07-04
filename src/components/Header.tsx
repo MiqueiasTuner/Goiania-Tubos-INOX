@@ -3,6 +3,7 @@ import { Search, ShoppingCart, MapPin, Store, ChevronDown, User, Heart, HelpCirc
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 import { B2BUser } from '../types';
+import { useLanguage } from '../lib/LanguageContext';
 
 const CAROUSEL_PRODUCTS: Record<string, { name: string; image: string; tag: string; link: string }[]> = {
   tubos: [
@@ -192,6 +193,61 @@ export default function Header({
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
 
+  const { lang, setLang, t } = useLanguage();
+  const currentLang = lang;
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const ANNOUNCEMENTS = {
+    pt: [
+      '⚡ TUBOS OD SANITÁRIOS INOX - PRONTA ENTREGA',
+      '⚡ CONEXÕES FLANGEADAS E CURVAS DE ALTA PRESSÃO',
+      '⚡ FLANGES ANSI B16.5 E ACESSÓRIOS DE VEDAÇÃO',
+      '⚡ VÁLVULAS DE ESFERA, BORBOLETA E GAVETA INOX',
+      '⚡ CHAPAS E BOBINAS ESCOVADAS, POLIDAS E ESPELHADAS',
+      '⚡ LIGAS ESPECIAIS AISI 304, AISI 316 E AÇO CARBONO'
+    ],
+    en: [
+      '⚡ STAINLESS OD SANITARY TUBES - READY STOCK',
+      '⚡ FLANGED FITTINGS AND HIGH-PRESSURE ELBOWS',
+      '⚡ ANSI B16.5 FLANGES & SEALING ACCESSORIES',
+      '⚡ STAINLESS BALL, BUTTERFLY & GATE VALVES',
+      '⚡ BRUSHED, POLISHED & MIRRORED SHEETS & COILS',
+      '⚡ SPECIAL ALLOYS AISI 304, AISI 316 & CARBON STEEL'
+    ],
+    es: [
+      '⚡ TUBOS OD SANITARIOS DE ACERO INOXIDABLE - STOCK INMEDIATO',
+      '⚡ CONEXIONES BRIDADAS Y CODOS DE ALTA PRESIÓN',
+      '⚡ BRIDAS ANSI B16.5 Y ACCESORIOS DE SELLADO',
+      '⚡ VÁLVULAS DE BOLA, MARIPOSA Y COMPUERTA INOX',
+      '⚡ CHAPAS Y BOBINAS PULIDAS, CEPILLADAS Y ESPEJADAS',
+      '⚡ ALEACIONES ESPECIALES AISI 304, AISI 316 Y ACERO AL CARBONO'
+    ]
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAnnouncementIndex((prev) => (prev + 1) % ANNOUNCEMENTS[currentLang].length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [currentLang]);
+
+  const handleLanguageChange = (newLang: 'pt' | 'en' | 'es') => {
+    setLang(newLang);
+    setAnnouncementIndex(0);
+    
+    const messages = {
+      pt: 'Idioma alterado para Português (Brasil)',
+      en: 'Language changed to English (United States)',
+      es: 'Idioma cambiado a Español (España)'
+    };
+    
+    setToastMessage(messages[newLang]);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
+
   // Auto-close on outside clicks for select popups
   const cepRef = useRef<HTMLDivElement>(null);
   const atendimentoRef = useRef<HTMLDivElement>(null);
@@ -350,17 +406,127 @@ export default function Header({
   return (
     <header className="sticky top-0 z-50 bg-white text-slate-800 select-none shadow-md border-b border-slate-200" id="app-header-electrolux">
       
+      {/* Top Banner (New Topmost Banner with rolling product names & fixed language selector) */}
+      <div className="bg-[#132c4e] text-white text-[11px] font-bold py-2 px-4 sm:px-6 lg:px-8 border-b border-white/5 relative overflow-hidden select-none">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 h-5">
+          
+          {/* Scrolling Carousel of Products (Left/Center) */}
+          <div className="flex-1 overflow-hidden relative flex items-center h-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`${currentLang}-${announcementIndex}`}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                className="text-brand-teal-light font-display text-xs tracking-wider flex items-center gap-1.5 whitespace-nowrap"
+              >
+                {ANNOUNCEMENTS[currentLang][announcementIndex]}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Fixed Languages Selector with Flags (as requested in print) */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="hidden sm:inline text-[9px] uppercase tracking-wider font-extrabold text-slate-400 font-mono">
+              {currentLang === 'pt' ? 'Idioma:' : currentLang === 'en' ? 'Language:' : 'Idioma:'}
+            </span>
+            <div className="flex items-center gap-1 bg-slate-950/60 p-0.5 rounded border border-slate-800/80">
+              
+              {/* Brazil Flag */}
+              <button
+                onClick={() => handleLanguageChange('pt')}
+                className={`relative p-0.5 rounded transition-all duration-300 hover:scale-105 active:scale-95 ${currentLang === 'pt' ? 'bg-brand-teal/30 ring-1 ring-brand-teal' : 'opacity-65 hover:opacity-100'}`}
+                title="Português (Brasil)"
+              >
+                <svg className="w-5.5 h-3.5 rounded-xs shadow-xs border border-white/10 select-none cursor-pointer" viewBox="0 0 220 154" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="220" height="154" fill="#009c3b" />
+                  <polygon points="110,14 206,77 110,140 14,77" fill="#ffdf00" />
+                  <circle cx="110" cy="77" r="31.5" fill="#002776" />
+                  <path d="M 80,85 Q 110,65 140,85" fill="none" stroke="#ffffff" strokeWidth="2.5" />
+                </svg>
+              </button>
+
+              {/* USA Flag */}
+              <button
+                onClick={() => handleLanguageChange('en')}
+                className={`relative p-0.5 rounded transition-all duration-300 hover:scale-105 active:scale-95 ${currentLang === 'en' ? 'bg-brand-teal/30 ring-1 ring-brand-teal' : 'opacity-65 hover:opacity-100'}`}
+                title="English (USA)"
+              >
+                <svg className="w-5.5 h-3.5 rounded-xs shadow-xs border border-white/10 select-none cursor-pointer" viewBox="0 0 220 154" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="220" height="154" fill="#ffffff" />
+                  <path d="M0,0 h220 v11.8 h-220 z M0,23.6 h220 v11.8 h-220 z M0,47.2 h220 v11.8 h-220 z M0,70.8 h220 v11.8 h-220 z M0,94.4 h220 v11.8 h-220 z M0,118 h220 v11.8 h-220 z M0,141.6 h220 v11.8 h-220 z" fill="#b22234" />
+                  <rect width="88" height="82.6" fill="#3c3b6e" />
+                  <circle cx="15" cy="15" r="1" fill="#ffffff" />
+                  <circle cx="35" cy="15" r="1" fill="#ffffff" />
+                  <circle cx="55" cy="15" r="1" fill="#ffffff" />
+                  <circle cx="75" cy="15" r="1" fill="#ffffff" />
+                  <circle cx="25" cy="30" r="1" fill="#ffffff" />
+                  <circle cx="45" cy="30" r="1" fill="#ffffff" />
+                  <circle cx="65" cy="30" r="1" fill="#ffffff" />
+                  <circle cx="15" cy="45" r="1" fill="#ffffff" />
+                  <circle cx="35" cy="45" r="1" fill="#ffffff" />
+                  <circle cx="55" cy="45" r="1" fill="#ffffff" />
+                  <circle cx="75" cy="45" r="1" fill="#ffffff" />
+                  <circle cx="25" cy="60" r="1" fill="#ffffff" />
+                  <circle cx="45" cy="60" r="1" fill="#ffffff" />
+                  <circle cx="65" cy="60" r="1" fill="#ffffff" />
+                </svg>
+              </button>
+
+              {/* Spain Flag */}
+              <button
+                onClick={() => handleLanguageChange('es')}
+                className={`relative p-0.5 rounded transition-all duration-300 hover:scale-105 active:scale-95 ${currentLang === 'es' ? 'bg-brand-teal/30 ring-1 ring-brand-teal' : 'opacity-65 hover:opacity-100'}`}
+                title="Español (España)"
+              >
+                <svg className="w-5.5 h-3.5 rounded-xs shadow-xs border border-white/10 select-none cursor-pointer" viewBox="0 0 220 154" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="220" height="38.5" fill="#c60b1e" />
+                  <rect y="38.5" width="220" height="77" fill="#ffc400" />
+                  <rect y="115.5" width="220" height="38.5" fill="#c60b1e" />
+                  <circle cx="55" cy="77" r="5" fill="#c60b1e" />
+                </svg>
+              </button>
+
+            </div>
+          </div>
+
+        </div>
+
+        {/* Floating Toast inside Header */}
+        <AnimatePresence>
+          {toastMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 10, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="absolute top-full left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-slate-800 text-white font-medium text-xs py-2 px-4 rounded-full shadow-2xl flex items-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4 text-brand-teal" />
+              <span>{toastMessage}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Upper Utility Header (GTI - Electrolux Premium Style) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
         
         {/* Left Side: Logo & Store Locators */}
-        <div className="flex items-center gap-6 shrink-0">
-          <button 
-            onClick={() => { setActiveTab('catalog'); setSearchQuery(''); }} 
-            className="text-left focus:outline-none transition-transform active:scale-95 duration-150"
-          >
-            <Logo />
-          </button>
+        <div className="flex items-center gap-6 shrink-0 h-full">
+          <div className="relative mr-2 self-stretch flex items-center bg-white pl-8 pr-16 shadow-[8px_0_20px_rgba(0,0,0,0.08)] select-none border-r border-slate-50"
+               style={{ 
+                 clipPath: 'polygon(0 0, 100% 0, 80% 100%, 0 100%)',
+                 margin: '-14px 0 -14px -32px',
+                 paddingLeft: '32px'
+               }}>
+            <button 
+              onClick={() => { setActiveTab('catalog'); setSearchQuery(''); }} 
+              className="text-left focus:outline-none transition-transform active:scale-95 duration-150 pr-4 flex items-center"
+            >
+              <Logo />
+            </button>
+          </div>
 
           {/* CEP Selector Popup (Electrolux style "Informe seu CEP") */}
           <div className="relative hidden md:block text-left" ref={cepRef}>
@@ -370,7 +536,9 @@ export default function Header({
             >
               <MapPin className="w-4 h-4 text-[#011e41]" />
               <div>
-                <span className="block text-[10px] text-slate-400 font-medium leading-none">Entrega em:</span>
+                <span className="block text-[10px] text-slate-400 font-medium leading-none">
+                  {lang === 'pt' ? 'Entrega em:' : lang === 'es' ? 'Entrega en:' : 'Delivery in:'}
+                </span>
                 <span className="font-bold text-slate-700 mt-0.5 block leading-none">{selectedRegion}</span>
               </div>
               <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-1 transition-transform duration-200 ${isCepOpen ? 'rotate-180' : ''}`} />
@@ -378,8 +546,14 @@ export default function Header({
 
             {isCepOpen && (
               <div className="absolute top-11 left-0 w-72 bg-white text-slate-800 rounded-xl shadow-2xl border border-slate-200 p-4 z-50 animate-fade-in text-xs">
-                <h4 className="font-bold text-[#011e41] text-sm mb-2">Simulador de Frete B2B</h4>
-                <p className="text-[11px] text-slate-500 mb-3">Informe seu CEP para mapearmos o estoque mais próximo da sua obra.</p>
+                <h4 className="font-bold text-[#011e41] text-sm mb-2">
+                  {lang === 'pt' ? 'Simulador de Frete B2B' : lang === 'es' ? 'Simulador de Flete B2B' : 'B2B Freight Simulator'}
+                </h4>
+                <p className="text-[11px] text-slate-500 mb-3">
+                  {lang === 'pt' ? 'Informe seu CEP para mapearmos o estoque mais próximo da sua obra.' :
+                   lang === 'es' ? 'Ingrese su código postal para ubicar el stock más cercano.' :
+                   'Enter your ZIP code to map the nearest inventory to your project.'}
+                </p>
                 
                 <form onSubmit={handleApplyCep} className="flex gap-2 mb-4">
                   <input
@@ -390,26 +564,28 @@ export default function Header({
                     className="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand-teal text-slate-800 bg-slate-50"
                   />
                   <button type="submit" className="px-3 py-1.5 bg-brand-teal hover:bg-brand-teal-dark text-white font-bold rounded-lg text-xs cursor-pointer">
-                    Mapear
+                    {lang === 'pt' ? 'Mapear' : lang === 'es' ? 'Mapear' : 'Locate'}
                   </button>
                 </form>
 
                 <div className="border-t border-slate-100 pt-3">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Mapear por Unidade Comercial</span>
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase mb-2">
+                    {lang === 'pt' ? 'Mapear por Unidade Comercial' : lang === 'es' ? 'Mapear por Sucursal' : 'Locate by Branch'}
+                  </span>
                   <div className="space-y-1">
                     <button 
                       onClick={() => handleQuickRegionSelect('Goiânia - GO')}
                       className="w-full text-left p-1.5 rounded hover:bg-slate-50 transition-colors flex justify-between items-center text-[11px] font-semibold text-slate-700 cursor-pointer"
                     >
-                      <span>Matriz Goiânia - GO</span>
-                      <span className="text-[10px] text-brand-teal">Estoque Principal</span>
+                      <span>{lang === 'pt' ? 'Matriz Goiânia - GO' : lang === 'es' ? 'Sede Goiânia - GO' : 'HQ Goiânia - GO'}</span>
+                      <span className="text-[10px] text-brand-teal">{lang === 'pt' ? 'Estoque Principal' : lang === 'es' ? 'Stock Principal' : 'Main Stock'}</span>
                     </button>
                     <button 
                       onClick={() => handleQuickRegionSelect('Imperatriz - MA')}
                       className="w-full text-left p-1.5 rounded hover:bg-slate-50 transition-colors flex justify-between items-center text-[11px] font-semibold text-slate-700 cursor-pointer"
                     >
-                      <span>Filial Imperatriz - MA</span>
-                      <span className="text-[10px] text-brand-teal">Estoque Norte/NE</span>
+                      <span>{lang === 'pt' ? 'Filial Imperatriz - MA' : lang === 'es' ? 'Sucursal Imperatriz - MA' : 'Branch Imperatriz - MA'}</span>
+                      <span className="text-[10px] text-brand-teal">{lang === 'pt' ? 'Estoque Norte/NE' : lang === 'es' ? 'Stock Norte/NE' : 'North/NE Stock'}</span>
                     </button>
                   </div>
                 </div>
@@ -424,8 +600,12 @@ export default function Header({
           >
             <Store className="w-4 h-4 text-[#011e41]" />
             <div>
-              <span className="block text-[10px] text-slate-400 font-medium leading-none">Presença Nacional</span>
-              <span className="font-bold text-slate-700 mt-0.5 block leading-none">Nossas Lojas</span>
+              <span className="block text-[10px] text-slate-400 font-medium leading-none">
+                {lang === 'pt' ? 'Presença Nacional' : lang === 'es' ? 'Presencia Nacional' : 'National Presence'}
+              </span>
+              <span className="font-bold text-slate-700 mt-0.5 block leading-none">
+                {lang === 'pt' ? 'Nossas Lojas' : lang === 'es' ? 'Nuestras Sucursales' : 'Our Stores'}
+              </span>
             </div>
           </button>
         </div>
@@ -445,7 +625,7 @@ export default function Header({
                   setActiveTab('catalog');
                 }
               }}
-              placeholder="Pesquisar tubos OD, conexões flangeadas, válvulas, chapas..."
+              placeholder={t('nav.search', 'Pesquise por Tubos, Curvas, Válvulas ou Flanges...')}
               className="w-full pl-10 pr-28 py-2.5 bg-slate-50 text-slate-800 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#011e41]/20 focus:bg-white transition-all placeholder:text-slate-400"
             />
             {searchQuery ? (
@@ -453,11 +633,11 @@ export default function Header({
                 onClick={() => setSearchQuery('')}
                 className="absolute inset-y-0 right-20 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600 cursor-pointer font-bold"
               >
-                Limpar
+                {lang === 'pt' ? 'Limpar' : lang === 'es' ? 'Limpiar' : 'Clear'}
               </button>
             ) : null}
             <button className="absolute right-0 top-0 bottom-0 px-4 bg-[#011e41] hover:bg-slate-800 rounded-r-lg font-bold text-xs uppercase tracking-wider text-white flex items-center justify-center transition-colors cursor-pointer">
-              Buscar
+              {lang === 'pt' ? 'Buscar' : lang === 'es' ? 'Buscar' : 'Search'}
             </button>
           </div>
         </div>
@@ -471,23 +651,33 @@ export default function Header({
               onClick={() => setIsAtendimentoOpen(!isAtendimentoOpen)}
               className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-[#011e41] transition-all py-1.5 px-2.5 rounded-lg hover:bg-slate-50 cursor-pointer"
             >
-              <span>Atendimento</span>
+              <span>{lang === 'pt' ? 'Atendimento' : lang === 'es' ? 'Atención' : 'Support'}</span>
               <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isAtendimentoOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isAtendimentoOpen && (
               <div className="absolute right-0 top-11 w-64 bg-white text-slate-800 rounded-xl shadow-2xl border border-slate-200/80 p-4 z-50 text-xs animate-fade-in text-left">
-                <h4 className="font-bold text-[#011e41] border-b border-slate-100 pb-2 mb-3 uppercase tracking-wider text-[10px]">Canais de Vendas GTI</h4>
+                <h4 className="font-bold text-[#011e41] border-b border-slate-100 pb-2 mb-3 uppercase tracking-wider text-[10px]">
+                  {lang === 'pt' ? 'Canais de Vendas GTI' : lang === 'es' ? 'Canales de Venta GTI' : 'GTI Sales Channels'}
+                </h4>
                 <div className="space-y-3">
                   <div>
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase">Matriz Goiânia</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase">
+                      {lang === 'pt' ? 'Matriz Goiânia' : lang === 'es' ? 'Sede Goiânia' : 'Goiânia Headquarters'}
+                    </span>
                     <a href="tel:6230922724" className="text-slate-700 hover:text-brand-teal font-bold block mt-0.5">(62) 3092-2724</a>
-                    <a href="https://wa.me/5562998517536" target="_blank" rel="noreferrer" className="text-brand-teal hover:underline text-[11px] font-bold block mt-0.5">WhatsApp Comercial Matriz</a>
+                    <a href="https://wa.me/5562998517536" target="_blank" rel="noreferrer" className="text-brand-teal hover:underline text-[11px] font-bold block mt-0.5">
+                      {lang === 'pt' ? 'WhatsApp Comercial Matriz' : lang === 'es' ? 'WhatsApp Comercial Sede' : 'HQ Commercial WhatsApp'}
+                    </a>
                   </div>
                   <div className="border-t border-slate-100 pt-2.5">
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase">Filial Imperatriz</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase">
+                      {lang === 'pt' ? 'Filial Imperatriz' : lang === 'es' ? 'Sucursal Imperatriz' : 'Imperatriz Branch'}
+                    </span>
                     <a href="tel:9941023415" className="text-slate-700 hover:text-brand-teal font-bold block mt-0.5">(99) 4102-3415</a>
-                    <a href="https://wa.me/559941023415" target="_blank" rel="noreferrer" className="text-brand-teal hover:underline text-[11px] font-bold block mt-0.5">WhatsApp Comercial Filial</a>
+                    <a href="https://wa.me/559941023415" target="_blank" rel="noreferrer" className="text-brand-teal hover:underline text-[11px] font-bold block mt-0.5">
+                      {lang === 'pt' ? 'WhatsApp Comercial Filial' : lang === 'es' ? 'WhatsApp Comercial Sucursal' : 'Branch Commercial WhatsApp'}
+                    </a>
                   </div>
                   <div className="border-t border-slate-100 pt-2.5 flex items-center gap-2 text-slate-500">
                     <Mail className="w-4 h-4 shrink-0 text-brand-teal" />
@@ -509,7 +699,7 @@ export default function Header({
                 <>
                   <div className="text-left hidden md:block">
                     <span className="block text-[9px] text-slate-400 font-medium leading-none">
-                      Empresa Conectada
+                      {lang === 'pt' ? 'Empresa Conectada' : lang === 'es' ? 'Empresa Conectada' : 'Connected Company'}
                     </span>
                     <span className="font-bold text-[#011e41] text-[11px] mt-0.5 block leading-none truncate max-w-[120px]">
                       {currentUser.tradingName}
@@ -519,7 +709,7 @@ export default function Header({
                 </>
               ) : (
                 <span className="font-extrabold text-[#011e41] text-[11.5px] uppercase tracking-wider py-0.5 px-1">
-                  Entrar
+                  {lang === 'pt' ? 'Entrar' : lang === 'es' ? 'Iniciar Sesión' : 'Login'}
                 </span>
               )}
             </button>
@@ -530,25 +720,29 @@ export default function Header({
                   <div className="bg-emerald-50/70 p-3.5 border-b border-emerald-100">
                     <div className="flex items-center gap-1.5 text-emerald-700 font-extrabold text-[11px] uppercase tracking-wider">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Faturamento Direto B2B
+                      {lang === 'pt' ? 'Faturamento Direto B2B' : lang === 'es' ? 'Facturación Directa B2B' : 'Direct B2B Invoicing'}
                     </div>
                     <h4 className="font-bold text-[#011e41] text-xs mt-1 truncate">{currentUser.companyName}</h4>
                     <p className="text-[10px] text-slate-500 mt-1 font-mono">CNPJ: {currentUser.cnpj}</p>
                     <div className="mt-2 text-[10px] bg-emerald-600 text-white font-extrabold px-2.5 py-1 rounded inline-block">
-                      Tabela Distribuidor Habilitada
+                      {lang === 'pt' ? 'Tabela Distribuidor Habilitada' : lang === 'es' ? 'Tarifa Distribuidor Habilitada' : 'Wholesale Rates Active'}
                     </div>
                   </div>
                 ) : (
                   <div className="bg-slate-50 p-3.5 border-b border-slate-100">
-                    <h4 className="font-bold text-[#011e41] text-xs">Acesso Corporativo</h4>
+                    <h4 className="font-bold text-[#011e41] text-xs">
+                      {lang === 'pt' ? 'Acesso Corporativo' : lang === 'es' ? 'Acceso Corporativo' : 'Corporate Access'}
+                    </h4>
                     <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
-                      Identifique sua empresa para liberar faturamento faturado direto de fábrica e condições exclusivas.
+                      {lang === 'pt' ? 'Identifique sua empresa para liberar faturamento faturado direto de fábrica e condições exclusivas.' :
+                       lang === 'es' ? 'Identifique su empresa para habilitar facturación directa de fábrica y condiciones exclusivas.' :
+                       'Identify your company to unlock direct factory invoicing and exclusive distributor rates.'}
                     </p>
                     <button 
                       onClick={() => { onOpenLogin(); setIsAccountOpen(false); }}
                       className="mt-2.5 w-full py-1.5 bg-[#011e41] hover:bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg transition-colors cursor-pointer text-center"
                     >
-                      Homologar CNPJ / Login
+                      {lang === 'pt' ? 'Homologar CNPJ / Login' : lang === 'es' ? 'Homologar CNPJ / Login' : 'Verify Corporate ID / Login'}
                     </button>
                   </div>
                 )}
@@ -559,21 +753,21 @@ export default function Header({
                     className="w-full text-left px-3 py-2 rounded hover:bg-slate-50 transition-colors flex items-center gap-2.5 text-slate-700 text-[11px] font-semibold cursor-pointer"
                   >
                     <FileText className="w-4 h-4 text-slate-400" />
-                    Meus Pedidos / Cotações
+                    {lang === 'pt' ? 'Meus Pedidos / Cotações' : lang === 'es' ? 'Mis Pedidos / Cotizaciones' : 'My Orders / Quotes'}
                   </button>
                   <button 
                     onClick={() => { setActiveTab('materials'); setIsAccountOpen(false); }}
                     className="w-full text-left px-3 py-2 rounded hover:bg-slate-50 transition-colors flex items-center gap-2.5 text-slate-700 text-[11px] font-semibold cursor-pointer"
                   >
                     <Award className="w-4 h-4 text-slate-400" />
-                    Ligas & Fichas Técnicas
+                    {lang === 'pt' ? 'Ligas & Fichas Técnicas' : lang === 'es' ? 'Aleaciones y Fichas Técnicas' : 'Alloys & Datasheets'}
                   </button>
                   <button 
                     onClick={() => { setActiveTab('faq'); setIsAccountOpen(false); }}
                     className="w-full text-left px-3 py-2 rounded hover:bg-slate-50 transition-colors flex items-center gap-2.5 text-slate-700 text-[11px] font-semibold cursor-pointer"
                   >
                     <HelpCircle className="w-4 h-4 text-slate-400" />
-                    Dúvidas e Suporte FAQ
+                    {lang === 'pt' ? 'Dúvidas e Suporte FAQ' : lang === 'es' ? 'Dudas y Soporte FAQ' : 'Help & Support FAQ'}
                   </button>
                 </div>
 
@@ -587,7 +781,7 @@ export default function Header({
                     className="w-full text-left px-3 py-2 rounded hover:bg-slate-100 transition-colors flex items-center gap-2.5 text-[#011e41] text-[11px] font-bold cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#011e41]" />
-                    Baixar Catálogo Geral
+                    {lang === 'pt' ? 'Baixar Catálogo Geral' : lang === 'es' ? 'Descargar Catálogo General' : 'Download Main Catalog'}
                   </button>
 
                   {currentUser && (
@@ -596,7 +790,7 @@ export default function Header({
                       className="w-full text-left px-3 py-2 rounded hover:bg-rose-50 text-rose-600 transition-colors flex items-center gap-2.5 text-[11px] font-bold cursor-pointer"
                     >
                       <X className="w-4 h-4 text-rose-500" />
-                      Desconectar Empresa
+                      {lang === 'pt' ? 'Desconectar Empresa' : lang === 'es' ? 'Desconectar Empresa' : 'Disconnect Company'}
                     </button>
                   )}
                 </div>
@@ -608,7 +802,7 @@ export default function Header({
           <button
             onClick={onOpenCart}
             className="relative flex items-center justify-center p-2 rounded-full hover:bg-slate-100 text-slate-600 hover:text-[#011e41] transition-all cursor-pointer"
-            aria-label="Carrinho de Cotação"
+            aria-label={lang === 'pt' ? 'Carrinho de Cotação' : lang === 'es' ? 'Carrito de Cotización' : 'Quote Cart'}
           >
             <motion.div
               key={cartCount}
@@ -653,15 +847,16 @@ export default function Header({
                   : 'text-slate-600'
               }`}
             >
-              <span>Todos os Produtos</span>
+              <span>{lang === 'pt' ? 'Todos os Produtos' : lang === 'es' ? 'Todos los Productos' : 'All Products'}</span>
               <span className={`absolute bottom-0 left-0 right-0 h-0.5 bg-brand-teal transition-all duration-300 origin-center ${activeTab === 'catalog' && !searchQuery ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
             </button>
 
             {/* Mega Dropdown Triggers */}
             {['tubos', 'conexoes', 'valvulas', 'chapas'].map((catId) => {
-              const label = catId === 'tubos' ? 'Tubos' : 
-                            catId === 'conexoes' ? 'Conexões & Flanges' : 
-                            catId === 'valvulas' ? 'Válvulas' : 'Estruturas & Chapas';
+              const label = catId === 'tubos' ? (lang === 'pt' ? 'Tubos' : lang === 'es' ? 'Tubos' : 'Tubes') : 
+                            catId === 'conexoes' ? (lang === 'pt' ? 'Conexões & Flanges' : lang === 'es' ? 'Conexiones y Bridas' : 'Fittings & Flanges') : 
+                            catId === 'valvulas' ? (lang === 'pt' ? 'Válvulas' : lang === 'es' ? 'Válvulas' : 'Valves') : 
+                            (lang === 'pt' ? 'Estruturas & Chapas' : lang === 'es' ? 'Estructuras y Chapas' : 'Structures & Sheets');
               return (
                 <div
                   key={catId}
@@ -729,7 +924,9 @@ export default function Header({
                 activeTab === 'segments' ? 'text-[#011e41]' : 'text-slate-600'
               }`}
             >
-              <span>Segmentos de Atuação</span>
+              <span>
+                {lang === 'pt' ? 'Segmentos de Atuação' : lang === 'es' ? 'Segmentos de Negocio' : 'Industries Served'}
+              </span>
               <span className={`absolute bottom-0 left-0 right-0 h-0.5 bg-brand-teal transition-all duration-300 origin-center ${activeTab === 'segments' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
             </button>
 
@@ -739,7 +936,9 @@ export default function Header({
                 activeTab === 'materials' ? 'text-[#011e41]' : 'text-slate-600'
               }`}
             >
-              <span>Guia de Ligas Metálicas</span>
+              <span>
+                {lang === 'pt' ? 'Guia de Ligas Metálicas' : lang === 'es' ? 'Guía de Aleaciones' : 'Alloys & Standards'}
+              </span>
               <span className={`absolute bottom-0 left-0 right-0 h-0.5 bg-brand-teal transition-all duration-300 origin-center ${activeTab === 'materials' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
             </button>
 
@@ -749,7 +948,9 @@ export default function Header({
                 activeTab === 'faq' ? 'text-[#011e41]' : 'text-slate-600'
               }`}
             >
-              <span>Dúvidas FAQ</span>
+              <span>
+                {lang === 'pt' ? 'Dúvidas FAQ' : lang === 'es' ? 'Dudas FAQ' : 'FAQ Support'}
+              </span>
               <span className={`absolute bottom-0 left-0 right-0 h-0.5 bg-brand-teal transition-all duration-300 origin-center ${activeTab === 'faq' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
             </button>
           </div>
@@ -766,7 +967,7 @@ export default function Header({
               }}
               className="px-3.5 py-1.5 bg-[#011e41] text-white hover:bg-brand-blue font-bold rounded-lg text-xs tracking-wider uppercase transition-colors cursor-pointer whitespace-nowrap"
             >
-              Baixar Catálogo
+              {lang === 'pt' ? 'Baixar Catálogo' : lang === 'es' ? 'Descargar Catálogo' : 'Download Catalog'}
             </button>
           </div>
 

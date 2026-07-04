@@ -1,7 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin, CheckCircle, ExternalLink, MessageCircle } from 'lucide-react';
 
 export default function Unidades() {
+  const [videoKey, setVideoKey] = useState(0);
+
+  // Automatically restart/reload the video every 26 seconds to mimic an infinite loop/GIF
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVideoKey(prev => prev + 1);
+    }, 26000); // 26 seconds presentation video duration
+    return () => clearInterval(interval);
+  }, []);
+
   const handleOpenWhatsApp = (phone: string, unit: string) => {
     const formattedPhone = phone.replace(/\D/g, '');
     const message = encodeURIComponent(`Olá! Gostaria de falar com o setor comercial da Unidade ${unit} da Goiânia Tubos Inox.`);
@@ -28,55 +38,40 @@ export default function Unidades() {
         {/* Outer Flex/Grid - Cards and Map */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
-          {/* Left Column: Interactive Map Hub illustration */}
+          {/* Left Column: Interactive Video Hub */}
           <div className="lg:col-span-5 bg-slate-900/40 border border-slate-700/50 p-6 sm:p-8 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[380px]">
-            {/* Visual background map connection line animations */}
+            {/* Visual background connection line animations */}
             <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
               backgroundImage: 'radial-gradient(#00a2a6 1px, transparent 1px)',
               backgroundSize: '16px 16px'
             }}></div>
             
-            <div className="relative">
+            <div className="relative z-10">
               <span className="text-[10px] font-bold text-brand-teal tracking-wider uppercase block mb-1">
-                Mapa de Distribuição
+                Vídeo de Apresentação
               </span>
               <h3 className="font-display font-bold text-lg text-slate-100">
-                Entrega para Todo o Brasil
+                GTI em Foco
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Nossas bases conectam você às melhores rotas rodoviárias do Centro-Oeste, Norte e Nordeste.
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Conheça nossa estrutura industrial, estoque de tubos de aço inox e nossa logística de entrega.
               </p>
             </div>
 
-            {/* Custom stylized map illustration */}
-            <div className="relative my-6 h-40 flex items-center justify-center">
-              {/* Brazil outline mockup using SVG */}
-              <svg className="w-full h-full max-w-[280px] text-slate-700 opacity-60" viewBox="0 0 100 100" fill="none" stroke="currentColor">
-                <path d="M40 20 C25 25, 20 40, 20 50 C20 65, 30 80, 50 90 C65 85, 80 75, 85 60 C90 40, 75 25, 60 20 Z" strokeWidth="1" strokeDasharray="2 2" />
-                {/* Goiânia Node */}
-                <circle cx="45" cy="62" r="4" fill="#00a2a6" className="animate-ping" />
-                <circle cx="45" cy="62" r="3" fill="#00a2a6" />
-                {/* Imperatriz Node */}
-                <circle cx="58" cy="40" r="4" fill="#00a2a6" className="animate-ping" />
-                <circle cx="58" cy="40" r="3" fill="#00a2a6" />
-                {/* Connection Line */}
-                <path d="M45 62 Q50 51, 58 40" stroke="#00a2a6" strokeWidth="1.5" strokeDasharray="3 3" />
-              </svg>
-
-              {/* Float Labels */}
-              <div className="absolute top-[32%] left-[62%] bg-slate-950/80 border border-brand-teal/40 px-2 py-0.5 rounded text-[9px] font-bold text-brand-teal-light flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-brand-teal"></span>
-                Imperatriz - MA
-              </div>
-              <div className="absolute bottom-[28%] left-[22%] bg-slate-950/80 border border-brand-teal/40 px-2 py-0.5 rounded text-[9px] font-bold text-brand-teal-light flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-brand-teal"></span>
-                Goiânia - GO (Matriz)
-              </div>
+            {/* Video Preview Container */}
+            <div className="relative my-6 aspect-video bg-black rounded-xl overflow-hidden border border-slate-800 shadow-2xl group">
+              <iframe 
+                key={videoKey}
+                src="https://drive.google.com/file/d/1-iVaesgKo2T0coMFGv3iC9VQj92YGdNE/preview?autoplay=1&mute=1"
+                className="w-full h-full border-0 absolute inset-0 pointer-events-auto"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                title="GTI Presentation"
+              />
             </div>
 
-            <div className="bg-[#011e41]/60 p-3 rounded-lg border border-slate-700/40 text-[11px] text-slate-300 flex items-center gap-2">
+            <div className="bg-[#011e41]/60 p-3 rounded-lg border border-slate-700/40 text-[11px] text-slate-300 flex items-center gap-2 z-10">
               <CheckCircle className="w-4 h-4 text-brand-teal shrink-0" />
-              <span>Frete CIF Norte, Nordeste e Centro-Oeste sob condições de faturamento mínimo.</span>
+              <span>Assista ao vídeo para ver de perto nosso compromisso com a excelência técnica.</span>
             </div>
           </div>
 
@@ -192,6 +187,7 @@ export default function Unidades() {
         </div>
 
       </div>
+
     </section>
   );
 }
