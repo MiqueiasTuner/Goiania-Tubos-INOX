@@ -3,6 +3,7 @@ import { CartItem, QuoteRequest, B2BUser } from '../types';
 import { X, Trash2, Send, Phone, ClipboardCheck, ArrowRight, MapPin, Building, User, Calendar, Plus, Minus, ShieldCheck, FileText } from 'lucide-react';
 import { motion } from 'motion/react';
 import { generateQuotePDF } from '../utils/pdfGenerator';
+import ProductThumbnail from './ProductThumbnail';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -253,6 +254,13 @@ export default function CartDrawer({
                       className="p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-xl transition-all flex items-start justify-between gap-4"
                       id={`cart-item-${item.id}`}
                     >
+                      <ProductThumbnail 
+                        image={item.product.image}
+                        name={item.product.name}
+                        category={item.product.category}
+                        productId={item.product.id}
+                        size="md"
+                      />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1.5">
                           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded font-mono bg-slate-200 text-slate-700 uppercase">

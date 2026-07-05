@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin, CheckCircle, ExternalLink, MessageCircle } from 'lucide-react';
 
-export default function Unidades() {
+interface UnidadesProps {
+  isVideoFloating: boolean;
+  setIsVideoFloating: (val: boolean) => void;
+}
+
+export default function Unidades({ isVideoFloating, setIsVideoFloating }: UnidadesProps) {
   const [videoKey, setVideoKey] = useState(0);
 
   // Automatically restart/reload the video every 26 seconds to mimic an infinite loop/GIF
@@ -59,15 +64,31 @@ export default function Unidades() {
             </div>
 
             {/* Video Preview Container */}
-            <div className="relative my-6 aspect-video bg-black rounded-xl overflow-hidden border border-slate-800 shadow-2xl group">
-              <iframe 
-                key={videoKey}
-                src="https://drive.google.com/file/d/1-iVaesgKo2T0coMFGv3iC9VQj92YGdNE/preview?autoplay=1&mute=1"
-                className="w-full h-full border-0 absolute inset-0 pointer-events-auto"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                title="GTI Presentation"
-              />
-            </div>
+            {isVideoFloating ? (
+              <div className="relative my-6 aspect-video bg-slate-950/60 rounded-xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-brand-teal/10 border border-brand-teal/40 flex items-center justify-center text-brand-teal-light animate-pulse mb-3">
+                  <CheckCircle className="w-5 h-5 text-brand-teal-light" />
+                </div>
+                <h4 className="text-xs font-bold text-slate-200">Apresentação Ativa no Mini Player</h4>
+                <p className="text-[10px] text-slate-400 mt-1 max-w-[220px]">O vídeo "GTI em Foco" está sendo reproduzido no canto esquerdo da tela.</p>
+                <button
+                  onClick={() => setIsVideoFloating(false)}
+                  className="mt-4 px-3 py-1.5 bg-brand-teal hover:bg-brand-teal-dark text-white text-[10px] font-semibold rounded-lg transition-colors cursor-pointer"
+                >
+                  Fixar Vídeo Aqui
+                </button>
+              </div>
+            ) : (
+              <div className="relative my-6 aspect-video bg-black rounded-xl overflow-hidden border border-slate-800 shadow-2xl group">
+                <iframe 
+                  key={videoKey}
+                  src="https://drive.google.com/file/d/1-iVaesgKo2T0coMFGv3iC9VQj92YGdNE/preview?autoplay=1&mute=1"
+                  className="absolute w-[110%] h-[120%] -left-[5%] -top-[5%] border-0 pointer-events-none"
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  title="GTI Presentation"
+                />
+              </div>
+            )}
 
             <div className="bg-[#011e41]/60 p-3 rounded-lg border border-slate-700/40 text-[11px] text-slate-300 flex items-center gap-2 z-10">
               <CheckCircle className="w-4 h-4 text-brand-teal shrink-0" />
@@ -97,7 +118,7 @@ export default function Unidades() {
                   <span>Rua Yanomamis, Qd 01, Lt 11 - Setor Residencial Jardim Petrópolis, Goiânia - GO, 74460-721</span>
                 </p>
 
-                <div className="space-y-3.5 mb-8 text-xs text-slate-300 border-t border-slate-800 pt-4">
+                <div className="space-y-3.5 mb-6 text-xs text-slate-300 border-t border-slate-800 pt-4">
                   <div className="flex items-center gap-2.5">
                     <Phone className="w-3.5 h-3.5 text-slate-400" />
                     <span>Fixo: (62) 3092-2724</span>
@@ -106,6 +127,17 @@ export default function Unidades() {
                     <Mail className="w-3.5 h-3.5 text-slate-400" />
                     <span>vendas@goianiatubos.com.br</span>
                   </div>
+                </div>
+
+                {/* Mini Google Map Embed */}
+                <div className="w-full h-28 border border-slate-700/60 rounded-xl overflow-hidden mb-5 relative shadow-inner">
+                  <iframe 
+                    src="https://maps.google.com/maps?q=Goiania%20Tubos%20e%20Conex%C3%B5es%20-%20Tudo%20para%20Sua%20Ind%C3%BAstria&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                    className="w-full h-full border-0 absolute inset-0 pointer-events-auto grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                    allowFullScreen={false}
+                    loading="lazy"
+                    title="Goiânia Branch Map"
+                  />
                 </div>
               </div>
 
@@ -119,7 +151,7 @@ export default function Unidades() {
                   WhatsApp Goiânia
                 </button>
                 <a 
-                  href="https://maps.google.com/?q=Rua+Yanomamis+Qd+01+Lt+11+Setor+Residencial+Jardim+Petropolis+Goiania"
+                  href="https://maps.app.goo.gl/GHsYPA52kSzRPwTe6"
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-2 bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
@@ -149,7 +181,7 @@ export default function Unidades() {
                   <span>Rodovia BR 010, Km 1345 - Coco Grande, Imperatriz - MA, 65909-170</span>
                 </p>
 
-                <div className="space-y-3.5 mb-8 text-xs text-slate-300 border-t border-slate-800 pt-4">
+                <div className="space-y-3.5 mb-6 text-xs text-slate-300 border-t border-slate-800 pt-4">
                   <div className="flex items-center gap-2.5">
                     <Phone className="w-3.5 h-3.5 text-slate-400" />
                     <span>Fixo: (99) 4102-3415</span>
@@ -158,6 +190,17 @@ export default function Unidades() {
                     <Mail className="w-3.5 h-3.5 text-slate-400" />
                     <span>vendas.imp@goianiatubos.com.br</span>
                   </div>
+                </div>
+
+                {/* Mini Google Map Embed */}
+                <div className="w-full h-28 border border-slate-700/60 rounded-xl overflow-hidden mb-5 relative shadow-inner">
+                  <iframe 
+                    src="https://maps.google.com/maps?q=Goi%C3%A2nia%20tubos%20inox%20%7C%20Imperatriz%20MA&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                    className="w-full h-full border-0 absolute inset-0 pointer-events-auto grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                    allowFullScreen={false}
+                    loading="lazy"
+                    title="Imperatriz Branch Map"
+                  />
                 </div>
               </div>
 
@@ -171,7 +214,7 @@ export default function Unidades() {
                   WhatsApp Imperatriz
                 </button>
                 <a 
-                  href="https://maps.google.com/?q=Rodovia+BR+010+Coco+Grande+Imperatriz+MA"
+                  href="https://maps.app.goo.gl/SCdPcvAHjqMUw5Yr5"
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-2 bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Product, CartItem, QuoteRequest, B2BUser } from './types';
 import { PRODUCTS } from './data/industrialData';
 import Header from './components/Header';
@@ -16,6 +16,8 @@ import Unidades from './components/Unidades';
 import DownloadCatalog from './components/DownloadCatalog';
 import LoginModal from './components/LoginModal';
 import B2BLoginTab from './components/B2BLoginTab';
+import Identidade from './components/Identidade';
+import ProductShowcase from './components/ProductShowcase';
 import { useLanguage } from './lib/LanguageContext';
 import { Filter, Database, Check, ShoppingCart, Info, Award, ShieldCheck, HelpCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -42,6 +44,9 @@ export default function App() {
   // Notification banner state
   const [notification, setNotification] = useState<string | null>(null);
 
+  // Video floating mini-player state (starts auto-playing on page load)
+  const [isVideoFloating, setIsVideoFloating] = useState(true);
+
   // Synchronize with localStorage
   useEffect(() => {
     try {
@@ -58,6 +63,50 @@ export default function App() {
       console.error('Falha ao ler dados do localStorage:', e);
     }
   }, []);
+
+  // Block context menu (Right Click) and Developer Tools inspector shortcuts (F12, Ctrl+Shift+I, Ctrl+U, Cmd+Opt+I)
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+      }
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.key === 'i' || e.key === 'j' || e.key === 'c')) {
+        e.preventDefault();
+        return false;
+      }
+      if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's')) {
+        e.preventDefault();
+        return false;
+      }
+      if (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i')) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Handle auto-minimize of the presentation video after 26 seconds (duration of video)
+  useEffect(() => {
+    if (isVideoFloating) {
+      const timer = setTimeout(() => {
+        setIsVideoFloating(false);
+      }, 26000); // 26 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [isVideoFloating]);
 
   const saveCart = (newCart: CartItem[]) => {
     setCartItems(newCart);
@@ -83,12 +132,23 @@ export default function App() {
     if (window.confirm('Deseja realmente apagar todo o seu histórico de cotações salvas localmente?')) {
       setQuoteHistory([]);
       try {
-        localStorage.removeItem('gti_quote_history');
+        localStorage.setItem('gti_quote_history', JSON.stringify([]));
       } catch (e) {
         console.error(e);
       }
       triggerNotification('Histórico de cotações removido.');
     }
+  };
+
+  const handleShowcaseCategory = (catName: string) => {
+    setActiveCategory(catName);
+    setActiveTab('catalog');
+    setSearchQuery('');
+    
+    setTimeout(() => {
+      const el = document.getElementById('catalog-grid-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   // Helper trigger notification
@@ -121,6 +181,7 @@ export default function App() {
     }
 
     saveCart(updatedCart);
+    setIsVideoFloating(false); // Minimize presentation video when adding item to cart
     triggerNotification(`Lote de "${newItem.product.name}" adicionado ao carrinho de cotação.`);
   };
 
@@ -157,6 +218,7 @@ export default function App() {
     });
 
     saveCart(updatedCart);
+    setIsVideoFloating(false); // Minimize presentation video when re-adding quote items to cart
     setIsCartOpen(true); // open drawer to see the items
     triggerNotification(`${pastItems.length} especificações re-adicionadas ao carrinho ativo.`);
   };
@@ -182,8 +244,8 @@ export default function App() {
 
   // Filtering products for the Marketplace Catalog Tab
   const filteredProducts = PRODUCTS.filter(p => {
-    // 1. Filter by category
-    const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
+    // 1. Filter by category (checks in real WooCommerce categories list)
+    const matchesCategory = activeCategory === 'all' || (p.categories && p.categories.includes(activeCategory));
     
     // 2. Filter by material list availability
     const matchesMaterial = activeMaterialFilter === 'all' || p.materials.some(m => m.includes(activeMaterialFilter));
@@ -200,15 +262,28 @@ export default function App() {
     return matchesCategory && matchesMaterial && matchesSearch;
   });
 
-  const productCategories = [
-    { id: 'all', label: t('filter.all_categories', 'Todos os Produtos') },
-    { id: 'tubos', label: t('filter.cat_tubos', 'Tubos') },
-    { id: 'conexoes', label: t('filter.cat_conexoes', 'Conexões & Flanges') },
-    { id: 'valvulas', label: t('filter.cat_valvulas', 'Válvulas') },
-    { id: 'estrutura', label: t('filter.cat_estrutura', 'Estruturas & Chapas') },
-    { id: 'incendio', label: t('filter.cat_incendio', 'Combate a Incêndio') },
-    { id: 'auxiliares', label: t('filter.cat_auxiliares', 'Bomba & Auxiliares') },
-  ];
+  // Dynamically extract all unique categories with counts from the 292 products
+  const productCategories = useMemo(() => {
+    const categoriesSet = new Set<string>();
+    PRODUCTS.forEach(p => {
+      if (p.categories) {
+        p.categories.forEach(cat => categoriesSet.add(cat));
+      }
+    });
+
+    const sortedCats = Array.from(categoriesSet).sort();
+
+    return [
+      { id: 'all', label: `${lang === 'pt' ? 'Todas as Categorias' : lang === 'es' ? 'Todas las Categorías' : 'All Categories'} (${PRODUCTS.length})` },
+      ...sortedCats.map(cat => {
+        const count = PRODUCTS.filter(p => p.categories && p.categories.includes(cat)).length;
+        return {
+          id: cat,
+          label: `${cat} (${count})`
+        };
+      })
+    ];
+  }, [lang]);
 
   const materialsList = [
     { id: 'all', label: t('filter.all_alloys', 'Todas as Ligas') },
@@ -237,15 +312,18 @@ export default function App() {
         }}
       />
 
-      {/* Interactive Hero Banner */}
+      {/* Interactive Hero Banner & Product Showcase */}
       {activeTab === 'catalog' && !searchQuery && (
-        <Hero 
-          onStartShopping={() => {
-            const el = document.getElementById('catalog-grid-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }}
-          onViewSegments={() => setActiveTab('segments')}
-        />
+        <>
+          <Hero 
+            onStartShopping={() => {
+              const el = document.getElementById('catalog-grid-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            onViewSegments={() => setActiveTab('segments')}
+          />
+          <ProductShowcase onSelectCategory={handleShowcaseCategory} />
+        </>
       )}
 
       {/* Global Toast Notification */}
@@ -271,33 +349,28 @@ export default function App() {
               <aside className="lg:col-span-3 text-left">
                 <div className="sticky top-40 space-y-6">
                   
-                  {/* Category Selection Box */}
+                  {/* Category Selection Dropdown (WooCommerce style) */}
                   <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs">
                     <div className="flex items-center gap-2 mb-4 text-brand-blue pb-2 border-b border-slate-100">
                       <Filter className="w-4 h-4 text-brand-teal" />
-                      <h3 className="font-display font-bold text-xs uppercase tracking-wider text-slate-400">{t('filter.category', 'Filtrar Categoria')}</h3>
+                      <h3 className="font-display font-bold text-xs uppercase tracking-wider text-slate-400">Filtrar Categoria</h3>
                     </div>
                     
-                    <div className="space-y-1">
+                    <select
+                      value={activeCategory}
+                      onChange={(e) => {
+                        setActiveCategory(e.target.value);
+                        const el = document.getElementById('catalog-products-container');
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                      className="w-full px-3 py-2.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue/20 cursor-pointer hover:border-slate-300 transition-colors"
+                    >
                       {productCategories.map((cat) => (
-                        <button
-                          key={cat.id}
-                          onClick={() => {
-                            setActiveCategory(cat.id);
-                            const el = document.getElementById('catalog-products-container');
-                            if (el) el.scrollIntoView({ behavior: 'smooth' });
-                          }}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer flex justify-between items-center ${
-                            activeCategory === cat.id
-                              ? 'bg-brand-blue text-white'
-                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                          }`}
-                        >
-                          <span>{cat.label}</span>
-                          {activeCategory === cat.id && <span className="w-1.5 h-1.5 rounded-full bg-brand-teal"></span>}
-                        </button>
+                        <option key={cat.id} value={cat.id}>
+                          {cat.label}
+                        </option>
                       ))}
-                    </div>
+                    </select>
                   </div>
 
                   {/* Material Alloy Filter Box */}
@@ -361,21 +434,19 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* Mobile Quick Category Switcher */}
-                  <div className="flex gap-2 lg:hidden overflow-x-auto w-full pb-2 scroll-hide">
-                    {productCategories.slice(0, 5).map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setActiveCategory(cat.id)}
-                        className={`px-3 py-1.5 text-[11px] font-bold rounded-full whitespace-nowrap transition-all cursor-pointer ${
-                          activeCategory === cat.id
-                            ? 'bg-brand-blue text-white'
-                            : 'bg-white border border-slate-200 text-slate-600'
-                        }`}
-                      >
-                        {cat.label}
-                      </button>
-                    ))}
+                   {/* Mobile Category Switcher Dropdown */}
+                  <div className="w-full lg:hidden mb-2">
+                    <select
+                      value={activeCategory}
+                      onChange={(e) => setActiveCategory(e.target.value)}
+                      className="w-full px-3 py-2 bg-white text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue/20 cursor-pointer"
+                    >
+                      {productCategories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -410,6 +481,7 @@ export default function App() {
                         product={product}
                         onAddToCart={handleAddToCart}
                         onViewSpecs={(p) => setSelectedProductSpecs(p)}
+                        defaultMaterial={activeMaterialFilter}
                       />
                     ))}
                   </div>
@@ -421,9 +493,12 @@ export default function App() {
           
           {/* Trust Logos section */}
           <TrustLogos />
+
+          {/* Corporate Identity section */}
+          <Identidade />
           
           {/* Unidades section */}
-          <Unidades />
+          <Unidades isVideoFloating={isVideoFloating} setIsVideoFloating={setIsVideoFloating} />
           
           {/* Download Catalog section */}
           <DownloadCatalog />
@@ -510,6 +585,69 @@ export default function App() {
         userEmailFromMetadata="miqueiasyout@gmail.com"
       />
 
+      {/* Floating Presentation Video Mini Player */}
+      <AnimatePresence>
+        {isVideoFloating && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="fixed bottom-6 left-6 z-45 w-[calc(100%-2rem)] max-w-xs sm:max-w-sm bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
+          >
+            {/* Header / Title Bar */}
+            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-slate-800/80">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-brand-teal animate-pulse"></span>
+                <span className="text-xs font-bold text-slate-200 font-display">GTI em Foco — Apresentação</span>
+              </div>
+              <button
+                onClick={() => setIsVideoFloating(false)}
+                className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Minimizar vídeo"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Video Content */}
+            <div className="relative aspect-video bg-black overflow-hidden">
+              <iframe
+                src="https://drive.google.com/file/d/1-iVaesgKo2T0coMFGv3iC9VQj92YGdNE/preview?autoplay=1&mute=1"
+                className="absolute w-[110%] h-[120%] -left-[5%] -top-[5%] border-0 pointer-events-none"
+                allow="autoplay; encrypted-media"
+                title="GTI Presentation Mini"
+              />
+            </div>
+
+            {/* Progress / Auto-minimize indicator */}
+            <div className="h-1 bg-slate-800 w-full relative">
+              <motion.div
+                initial={{ width: '100%' }}
+                animate={{ width: '0%' }}
+                transition={{ duration: 26, ease: 'linear' }}
+                className="h-full bg-brand-teal absolute left-0 top-0"
+              />
+            </div>
+
+            {/* Bottom Info Bar */}
+            <div className="px-3 py-2 bg-slate-900 text-[10px] text-slate-400 flex items-center justify-between">
+              <span>Mudo por padrão do navegador</span>
+              <button
+                onClick={() => {
+                  setIsVideoFloating(false);
+                  const el = document.getElementById('unidades-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="text-brand-teal-light font-bold hover:underline cursor-pointer"
+              >
+                Ver na página
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Floating WhatsApp B2B Support Button */}
       <div className="fixed bottom-6 right-6 z-50 group flex items-center gap-3">
         {/* Tooltip speech bubble */}
@@ -529,6 +667,8 @@ export default function App() {
           className="relative w-14 h-14 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full flex items-center justify-center shadow-xl shadow-[#25D366]/20 transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border-2 border-white/10"
           aria-label="Fale conosco no WhatsApp"
         >
+          {/* Pulsing red notification badge indicator */}
+          <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-rose-500 border-2 border-white rounded-full animate-bounce shadow-md"></span>
           {/* Custom high-fidelity white WhatsApp vector icon */}
           <svg 
             className="w-7 h-7 fill-current" 

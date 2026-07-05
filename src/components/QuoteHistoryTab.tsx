@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { QuoteRequest, CartItem } from '../types';
 import { Calendar, User, Building, MapPin, ClipboardList, Send, Phone, ArrowUpRight, CheckCircle, Clock } from 'lucide-react';
+import ProductThumbnail from './ProductThumbnail';
 
 interface QuoteHistoryTabProps {
   quoteHistory: QuoteRequest[];
@@ -180,21 +181,30 @@ export default function QuoteHistoryTab({ quoteHistory, onReaddAllToCart, onClea
                             key={idx}
                             className="p-3 bg-white border border-slate-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                           >
-                            <div>
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 font-mono bg-slate-100 text-slate-500 rounded uppercase mr-2">
-                                {item.product.standard || 'GTI'}
-                              </span>
-                              <strong className="text-slate-800 font-display">{item.product.name}</strong>
-                              <div className="flex flex-wrap gap-3 text-[10px] text-slate-500 font-mono mt-1">
-                                <span>Liga: {item.selectedMaterial}</span>
-                                <span>Bitola: {item.selectedSize}</span>
-                                {item.selectedPressureClass && <span>Parede: {item.selectedPressureClass}</span>}
+                            <div className="flex items-start sm:items-center gap-3 flex-1">
+                              <ProductThumbnail 
+                                image={item.product.image}
+                                name={item.product.name}
+                                category={item.product.category}
+                                productId={item.product.id}
+                                size="sm"
+                              />
+                              <div>
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 font-mono bg-slate-100 text-slate-500 rounded uppercase mr-2">
+                                  {item.product.standard || 'GTI'}
+                                </span>
+                                <strong className="text-slate-800 font-display">{item.product.name}</strong>
+                                <div className="flex flex-wrap gap-3 text-[10px] text-slate-500 font-mono mt-1">
+                                  <span>Liga: {item.selectedMaterial}</span>
+                                  <span>Bitola: {item.selectedSize}</span>
+                                  {item.selectedPressureClass && <span>Parede: {item.selectedPressureClass}</span>}
+                                </div>
+                                {item.notes && (
+                                  <p className="text-[10px] text-brand-teal-dark bg-brand-teal/5 px-2 py-1 rounded font-medium mt-1 inline-block">
+                                    Nota: "{item.notes}"
+                                  </p>
+                                )}
                               </div>
-                              {item.notes && (
-                                <p className="text-[10px] text-brand-teal-dark bg-brand-teal/5 px-2 py-1 rounded font-medium mt-1 inline-block">
-                                  Nota: "{item.notes}"
-                                </p>
-                              )}
                             </div>
                             
                             <div className="font-mono text-right shrink-0">

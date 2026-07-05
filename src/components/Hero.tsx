@@ -107,7 +107,7 @@ export default function Hero({ onStartShopping, onViewSegments }: HeroProps) {
     <section className="relative overflow-hidden text-white" id="hero-slider-section">
       
       {/* Active Slide Wrapper */}
-      <div className="relative min-h-[520px] md:min-h-[600px] flex items-center transition-all duration-700 ease-in-out">
+      <div className="relative min-h-[380px] md:min-h-[440px] flex items-center transition-all duration-700 ease-in-out">
         
         {/* Background Gradients & Patterns */}
         <div className={`absolute inset-0 bg-gradient-to-br ${SLIDES[activeSlide].bgGradient} transition-colors duration-700`}></div>
@@ -119,7 +119,7 @@ export default function Hero({ onStartShopping, onViewSegments }: HeroProps) {
         }}></div>
 
         {/* Outer Slide Container */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 z-10 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 z-10 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center text-left">
             
             {/* Left text column */}

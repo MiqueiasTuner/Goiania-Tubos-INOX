@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, ShieldCheck, Building2, Mail, Lock, CheckCircle2, Info, ArrowRight } from 'lucide-react';
 import { B2BUser } from '../types';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -71,34 +73,53 @@ export default function LoginModal({ isOpen, onClose, onLogin, userEmailFromMeta
     setError('');
   };
 
-  const handleManualSubmit = (e: React.FormEvent) => {
+  const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cnpj || !email || !password) {
       setError('Por favor, preencha todos os campos corporativos.');
       return;
     }
 
-    // Simulate validation or match preset if they typed the preset's email
     const cleanCnpj = cnpj.replace(/\D/g, '');
     const foundPreset = PRESET_ACCOUNTS.find(
       p => p.email.toLowerCase() === email.toLowerCase() || p.cnpj.replace(/\D/g, '') === cleanCnpj
     );
 
-    if (foundPreset) {
-      executeLogin(foundPreset);
+    const targetUser: B2BUser = foundPreset || {
+      companyName: 'Empresa Homologada GTI S/A',
+      cnpj: cnpj,
+      tradingName: email.split('@')[0].toUpperCase(),
+      email: email,
+      phone: '(62) 3000-0000',
+      city: 'Goiânia',
+      state: 'GO',
+      discountRate: 10,
+    };
+
+    // Firebase Auth integration
+    if (import.meta.env.VITE_FIREBASE_API_KEY) {
+      try {
+        setError('');
+        // Attempt sign in via Firebase Auth
+        await signInWithEmailAndPassword(auth, email, password);
+        executeLogin(targetUser);
+      } catch (signInErr: any) {
+        // Auto-registration if account does not exist or credentials look new
+        if (signInErr.code === 'auth/user-not-found' || signInErr.code === 'auth/invalid-credential') {
+          try {
+            await createUserWithEmailAndPassword(auth, email, password);
+            executeLogin(targetUser);
+          } catch (signUpErr: any) {
+            setError(`Erro ao criar conta no Firebase: ${signUpErr.message}`);
+          }
+        } else {
+          setError(`Erro ao autenticar no Firebase: ${signInErr.message}`);
+        }
+      }
     } else {
-      // Generate a new temporary custom account based on what they typed!
-      const customUser: B2BUser = {
-        companyName: 'Empresa Homologada GTI S/A',
-        cnpj: cnpj,
-        tradingName: email.split('@')[0].toUpperCase(),
-        email: email,
-        phone: '(62) 3000-0000',
-        city: 'Goiânia',
-        state: 'GO',
-        discountRate: 10, // Default 10% discount for registered new partners
-      };
-      executeLogin(customUser);
+      // Local fallback for local development when .env lacks Firebase VITE keys
+      console.warn('Firebase VITE_FIREBASE_API_KEY não definido. Rodando login em modo de simulação local.');
+      executeLogin(targetUser);
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product, CartItem } from '../types';
 import { Plus, Minus, Check, Clipboard, Info, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -8,55 +8,34 @@ interface ProductCardProps {
   product: Product;
   onAddToCart: (item: Omit<CartItem, 'id'>) => void;
   onViewSpecs: (product: Product) => void;
+  defaultMaterial?: string;
 }
 
-const getRealProductImage = (productId: string) => {
-  switch (productId) {
-    case 'tubo-inox-od-sanitario':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/TUBO-RETANGULAR-INOX.png';
-    case 'tubo-inox-astm-a312':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/09/TUBOS.jpg';
-    case 'tubo-aco-carbono-a106':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/09/TUBOS.jpg';
-    case 'tubo-aco-galvanizado-nbr-5580':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/09/TUBOS.jpg';
-    case 'curva-90-solda-od':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/TE-PI-PE.png';
-    case 'curva-90-aco-carbono-sch40':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/09/COTOVELO-45-ALTA-PRESSAO.jpg';
-    case 'flange-sobreposto-so':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/09/FLANGE-ACO-CARBONO.jpg';
-    case 'conexao-roscada-bsp':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/09/COTOVELO-45-ALTA-PRESSAO.jpg';
-    case 'valvula-borboleta-sanitaria':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/VALVULA-BORBOLETA-MANUAL-REVESTIDA-PTFE.png';
-    case 'valvula-esfera-monobloco':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/VALVULA-BORBOLETA-MANUAL-REVESTIDA-PTFE.png';
-    case 'valvula-retencao-vertical':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/VALVULA-EXPANSAO-AMONIA.jpg';
-    case 'valvula-solenoide-laton-inox':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/VALVULA-SOLENOIDE-VAPOR.png';
-    case 'chapa-aco-inox':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2024/02/chapa-de-inox-em-joinville.webp';
-    case 'perfis-estrutura-cantoneiras':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/TUBO-RETANGULAR-INOX.png';
-    case 'mangueira-incendio-certificada':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/CAIXA-INCENDIO-SOBREPOR.png';
-    case 'registro-globo-angular-incendio':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/12/TE-45-GALVANIZADO.png';
-    case 'motobomba-schneider-me':
-      return 'https://goianiatubos.com.br/wp-content/uploads/2023/10/VALVULA-EXPANSAO-AMONIA.jpg';
-    default:
-      return '';
-  }
-};
+// Product illustration/SVG fallback logic is maintained below
 
-export default function ProductCard({ product, onAddToCart, onViewSpecs }: ProductCardProps) {
+export default function ProductCard({ product, onAddToCart, onViewSpecs, defaultMaterial }: ProductCardProps) {
   const [selectedMaterial, setSelectedMaterial] = useState<string>(product.materials[0]);
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0]);
   const [selectedPressureClass, setSelectedPressureClass] = useState<string>(
     product.pressureClasses ? product.pressureClasses[0] : ''
   );
+
+  // Synchronize with global alloy filter selection ("salvar a liga")
+  useEffect(() => {
+    if (defaultMaterial && defaultMaterial !== 'all') {
+      const matchWord = defaultMaterial === 'Inox 304' ? '304' :
+                        defaultMaterial === 'Inox 316' ? '316' :
+                        defaultMaterial === 'Carbono' ? 'carbono' :
+                        defaultMaterial === 'Galvanizado' ? 'galvanizado' : '';
+      
+      if (matchWord) {
+        const matched = product.materials.find(m => m.toLowerCase().includes(matchWord.toLowerCase()));
+        if (matched) {
+          setSelectedMaterial(matched);
+        }
+      }
+    }
+  }, [defaultMaterial, product.materials]);
   const [quantity, setQuantity] = useState<number>(1);
   const [notes, setNotes] = useState<string>('');
   const [isAdded, setIsAdded] = useState<boolean>(false);
@@ -221,9 +200,9 @@ export default function ProductCard({ product, onAddToCart, onViewSpecs }: Produ
       {/* Visual illustration box */}
       <div className="h-44 bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center p-6 relative border-b border-slate-100/60 overflow-hidden group">
         <div className="w-32 h-32 flex items-center justify-center">
-          {!imageError && getRealProductImage(product.id) ? (
+          {!imageError && product.image ? (
             <img 
-              src={getRealProductImage(product.id)}
+              src={product.image}
               alt={product.name}
               onError={() => setImageError(true)}
               className="max-w-full max-h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
@@ -251,8 +230,45 @@ export default function ProductCard({ product, onAddToCart, onViewSpecs }: Produ
           </p>
         </div>
 
+        {/* Quantity Selection Controls */}
+        <div className="flex items-center justify-between gap-4 mt-auto pt-3 pb-2 border-t border-slate-100">
+          <div className="flex flex-col text-left">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Quantidade</span>
+            <div className="flex items-center border border-slate-200 rounded-lg bg-slate-50 p-0.5 max-w-[110px]">
+              <button
+                type="button"
+                onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-md transition-colors cursor-pointer"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-10 text-center bg-transparent border-0 text-xs font-bold text-slate-800 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <button
+                type="button"
+                onClick={() => setQuantity(prev => prev + 1)}
+                className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-md transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Unit Info */}
+          <div className="text-right flex flex-col justify-end">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unidade</span>
+            <span className="text-[11px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded capitalize font-mono">
+              {product.unit || 'peça'}
+            </span>
+          </div>
+        </div>
+
         {/* Buttons */}
-        <div className="grid grid-cols-12 gap-2 mt-auto pt-4 border-t border-slate-100">
+        <div className="grid grid-cols-12 gap-2 pt-3 border-t border-slate-100">
           <button
             onClick={() => onViewSpecs(product)}
             className="col-span-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-700 rounded-lg transition-all flex items-center justify-center cursor-pointer active:scale-95"

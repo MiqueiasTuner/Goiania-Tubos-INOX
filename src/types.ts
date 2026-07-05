@@ -11,6 +11,8 @@ export interface Product {
   featured?: boolean;
   unit: string; // e.g. "barra", "peça", "metro"
   applicationNote?: string;
+  image?: string;
+  categories?: string[];
 }
 
 export interface CartItem {
